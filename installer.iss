@@ -9,19 +9,21 @@ DefaultDirName={autopf}\QuickAudio
 DefaultGroupName=QuickAudio
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-OutputDir=build-release
+OutputDir=cmake-build-release
 OutputBaseFilename=QuickAudio-Setup
 Compression=lzma2
 SolidCompression=yes
 PrivilegesRequired=admin
+SetupIconFile=res\icon.ico
+UninstallDisplayIcon={app}\QuickAudio.exe
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a desktop shortcut"; Flags: unchecked
 Name: "vcredist"; Description: "Install Microsoft Visual C++ runtime"; Flags: checkedonce
 
 [Files]
-Source: "build-release\installer-stage\*"; DestDir: "{app}"; Excludes: "vc_redist.x64.exe"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "build-release\installer-stage\vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall; Tasks: vcredist
+Source: "cmake-build-release\installer-stage\*"; DestDir: "{app}"; Excludes: "vc_redist.x64.exe"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "cmake-build-release\installer-stage\vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall; Tasks: vcredist
 
 [Icons]
 Name: "{group}\QuickAudio"; Filename: "{app}\QuickAudio.exe"

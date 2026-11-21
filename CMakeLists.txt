@@ -29,6 +29,50 @@ target_link_libraries(QuickAudio PRIVATE
         Ole32.lib
 )
 
+# Release builds stage everything installer.iss packages into installer-stage/.
+if (WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Release")
+    get_filename_component(QT_BIN_DIR "${Qt6Core_DIR}/../../../bin" ABSOLUTE)
+    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${QT_BIN_DIR}" REQUIRED)
+
+    set(VC_REDIST_PATH "" CACHE FILEPATH "Path to vc_redist.x64.exe for the installer stage")
+    if (NOT VC_REDIST_PATH)
+        set(_redist_candidates)
+        if (DEFINED ENV{VCToolsRedistDir})
+            list(APPEND _redist_candidates "$ENV{VCToolsRedistDir}/vc_redist.x64.exe")
+        endif ()
+        string(FIND "${CMAKE_CXX_COMPILER}" "/Tools/MSVC/" _vc_tools_pos)
+        if (_vc_tools_pos GREATER -1)
+            string(SUBSTRING "${CMAKE_CXX_COMPILER}" 0 ${_vc_tools_pos} _vc_dir)
+            file(GLOB _redist_glob "${_vc_dir}/Redist/MSVC/*/vc_redist.x64.exe")
+            list(SORT _redist_glob COMPARE NATURAL ORDER DESCENDING)
+            list(APPEND _redist_candidates ${_redist_glob})
+        endif ()
+        foreach (_candidate IN LISTS _redist_candidates)
+            if (EXISTS "${_candidate}")
+                set(VC_REDIST_PATH "${_candidate}" CACHE FILEPATH "" FORCE)
+                break()
+            endif ()
+        endforeach ()
+    endif ()
+
+    set(INSTALLER_STAGE_DIR "${CMAKE_BINARY_DIR}/installer-stage")
+    add_custom_command(TARGET QuickAudio POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E rm -rf "${INSTALLER_STAGE_DIR}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${INSTALLER_STAGE_DIR}"
+            COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:QuickAudio>" "${INSTALLER_STAGE_DIR}"
+            COMMAND "${WINDEPLOYQT_EXECUTABLE}" --release --no-translations
+                    --dir "${INSTALLER_STAGE_DIR}" "${INSTALLER_STAGE_DIR}/$<TARGET_FILE_NAME:QuickAudio>"
+            COMMENT "Staging installer files with windeployqt"
+            VERBATIM)
+    if (VC_REDIST_PATH)
+        add_custom_command(TARGET QuickAudio POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy "${VC_REDIST_PATH}" "${INSTALLER_STAGE_DIR}/vc_redist.x64.exe"
+                VERBATIM)
+    else ()
+        message(WARNING "vc_redist.x64.exe not found; set VC_REDIST_PATH or installer.iss will fail to compile.")
+    endif ()
+endif ()
+
 include(CTest)
 if (BUILD_TESTING)
     add_executable(volume_dial_test tests/volume_dial_test.cpp)
