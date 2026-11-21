@@ -1,10 +1,10 @@
 # QuickAudio
 
-Do you frequently change the volume of the left and right audio channels?<br>
-Do you want the application that does that to NOT use about 20% of your CPU at idle and 100MB of ram because Microsft sucks?<br>
-Do you not care about code whipped up in 10 minutes using an LLM and probably no further updates?
+- Do you frequently change the volume of the left and right audio channels on your PC for whatever reason?<br><br>
+- Do you want the app that changes said volume to NOT use about 20% of your CPU at idle and 100MB of ram because Microsoft sucks?<br><br>
+- Do you not care about code whipped up in 10 minutes using an LLM and probably no further updates? <br>
 
-Then this is the application for you!
+### Then this is the application for you!
 
 ![QuickAudio main window showing channel and system volume controls](res/screenshot.png)
 
