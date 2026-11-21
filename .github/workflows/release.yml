@@ -28,8 +28,11 @@ jobs:
           cache: true
       - name: Set up MSVC
         uses: ilammy/msvc-dev-cmd@v1
+      - name: Download Visual C++ redistributable
+        shell: pwsh
+        run: Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vc_redist.x64.exe -OutFile "$env:RUNNER_TEMP\vc_redist.x64.exe"
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$env:Qt6_DIR"
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_PREFIX_PATH=$env:Qt6_DIR" "-DVC_REDIST_PATH=$env:RUNNER_TEMP\vc_redist.x64.exe"
       - name: Build
         run: cmake --build build
       - name: Test
@@ -42,10 +45,22 @@ jobs:
           windeployqt --release --no-translations --dir package package/QuickAudio.exe
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Compress-Archive -Path package/* -DestinationPath QuickAudio-windows-x64.zip
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+      - name: Create installer
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DStageDir=$env:GITHUB_WORKSPACE\build\installer-stage" "/DInstallerOutputDir=$env:GITHUB_WORKSPACE\build" installer.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
           name: QuickAudio-windows-x64
           path: QuickAudio-windows-x64.zip
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QuickAudio-installer-windows-x64
+          path: build/QuickAudio-Setup.exe
           if-no-files-found: error
 
   release:
@@ -58,9 +73,12 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: QuickAudio-windows-x64
+      - uses: actions/download-artifact@v4
+        with:
+          name: QuickAudio-installer-windows-x64
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$env:RELEASE_TAG" QuickAudio-windows-x64.zip --verify-tag --generate-notes
+        run: gh release create "$env:RELEASE_TAG" QuickAudio-windows-x64.zip QuickAudio-Setup.exe --verify-tag --generate-notes

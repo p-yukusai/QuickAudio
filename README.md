@@ -16,9 +16,9 @@
 
 ## Getting started
 
-Download the Windows x64 ZIP from the project's GitHub releases, extract it, and
-run `QuickAudio.exe`. The ZIP includes the Qt runtime dependencies; the Microsoft
-Visual C++ Redistributable may also be required.
+Download the Windows x64 installer from the project's GitHub releases, or extract
+the ZIP and run `QuickAudio.exe`. The ZIP includes the Qt runtime dependencies;
+the Microsoft Visual C++ Redistributable may also be required.
 
 Drag a dial up or down, or use its slider, to change a channel's volume. Use the
 system volume slider to change the master volume. Select an output device using
@@ -43,6 +43,6 @@ Replace the Qt path with your installation and install Ninja if necessary.
 ## CI and releases
 
 GitHub Actions builds and tests on pushes and pull requests and uploads the
-Windows x64 ZIP as a workflow artifact. Pushing a tag beginning with `v` (for
-example, `v1.0.0`) publishes the ZIP as a GitHub release after the build and
-tests pass. The repository must allow GitHub Actions to create releases.
+Windows x64 ZIP and installer as workflow artifacts. Pushing a tag beginning
+with `v` (for example, `v1.0.0`) publishes both as a GitHub release after the
+build and tests pass. The repository must allow GitHub Actions to create releases.
