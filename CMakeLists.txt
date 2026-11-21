@@ -12,7 +12,7 @@ find_package(Qt6 COMPONENTS
         Widgets
         REQUIRED)
 
-qt_add_executable(QuickAudio main.cpp src/imm_audio.h
+qt_add_executable(QuickAudio main.cpp src/imm_audio.h QuickAudio.rc
         src/main_window.h)
 set_target_properties(QuickAudio PROPERTIES WIN32_EXECUTABLE TRUE)
 
