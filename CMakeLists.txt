@@ -14,6 +14,7 @@ find_package(Qt6 COMPONENTS
 
 qt_add_executable(QuickAudio main.cpp src/imm_audio.h
         src/main_window.h)
+set_target_properties(QuickAudio PROPERTIES WIN32_EXECUTABLE TRUE)
 
 qt_add_resources(QuickAudio "theme_resources"
         PREFIX "/"
