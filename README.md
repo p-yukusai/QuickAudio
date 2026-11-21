@@ -11,8 +11,8 @@
 ## Features
 
 - Adjust each available output channel using its dial or slider.
-- Adjust the output device's master volume and see the current device name.
-- Follow changes to the default output device and its volume automatically.
+- Select an output device and adjust its master volume.
+- Follow changes to output devices and their volume automatically.
 
 ## Getting started
 
@@ -21,7 +21,9 @@ run `QuickAudio.exe`. The ZIP includes the Qt runtime dependencies; the Microsof
 Visual C++ Redistributable may also be required.
 
 Drag a dial up or down, or use its slider, to change a channel's volume. Use the
-system volume slider to change the master volume. Controls are unavailable when
+system volume slider to change the master volume. Select an output device using
+the device selector. To change the Windows default output for all audio roles,
+select a device and click Set selected device as default. Controls are unavailable when
 the corresponding device or channel is unavailable.
 
 ## Build from source

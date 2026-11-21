@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include <QSlider>
+#include <QWheelEvent>
 #include <cstdlib>
 
 int main(int argc, char **argv) {
@@ -30,15 +31,43 @@ int main(int argc, char **argv) {
     if (dial.value() != 0) return EXIT_FAILURE;
     slider.setValue(42);
     if (dial.value() != 42) return EXIT_FAILURE;
+    mouse(QEvent::MouseButtonPress, 75, Qt::LeftButton, Qt::LeftButton);
+    mouse(QEvent::MouseMove, 74, Qt::NoButton, Qt::LeftButton);
+    if (dial.value() != 43) return EXIT_FAILURE;
+    mouse(QEvent::MouseButtonRelease, 74, Qt::LeftButton, Qt::NoButton);
+    auto wheel = [](QWidget &widget, int delta) {
+        QWheelEvent event(QPointF(10, 10), QPointF(10, 10), QPoint(), QPoint(0, delta),
+                          Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
+        QApplication::sendEvent(&widget, &event);
+    };
+    wheel(dial, 120);
+    if (dial.value() != 44) return EXIT_FAILURE;
+    wheel(dial, -60);
+    if (dial.value() != 44) return EXIT_FAILURE;
+    wheel(dial, -60);
+    if (dial.value() != 43) return EXIT_FAILURE;
+    dial.setValue(100);
+    wheel(dial, 120);
+    if (dial.value() != 100) return EXIT_FAILURE;
     const QColor low = VolumeSlider::colorForFraction(0);
     const QColor middle = VolumeSlider::colorForFraction(0.5);
     const QColor high = VolumeSlider::colorForFraction(1);
-    if (!(low.lightness() < middle.lightness() && middle.lightness() < high.lightness())) return EXIT_FAILURE;
+    if (!(low.red() > low.blue() && high.blue() > high.red()
+          && middle.red() < low.red() && middle.blue() > low.blue())) return EXIT_FAILURE;
+    if (low.lightness() < 150 || middle.lightness() < 150 || high.lightness() < 150) return EXIT_FAILURE;
     if (VolumeSlider::colorForFraction(-1) != low || VolumeSlider::colorForFraction(2) != high) return EXIT_FAILURE;
     VolumeSlider volumeSlider;
     volumeSlider.setRange(0, 100);
     volumeSlider.resize(200, 30);
     volumeSlider.show();
+    volumeSlider.setValue(25);
+    wheel(volumeSlider, 120);
+    if (volumeSlider.value() != 26) return EXIT_FAILURE;
+    wheel(volumeSlider, -120);
+    if (volumeSlider.value() != 25) return EXIT_FAILURE;
+    volumeSlider.setValue(0);
+    wheel(volumeSlider, -120);
+    if (volumeSlider.value() != 0) return EXIT_FAILURE;
     volumeSlider.setValue(25);
     const QImage dim = volumeSlider.grab().toImage();
     volumeSlider.setValue(75);

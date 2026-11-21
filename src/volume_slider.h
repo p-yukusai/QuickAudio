@@ -1,5 +1,7 @@
 #pragma once
 
+#include "volume_control_style.h"
+
 #include <QLinearGradient>
 #include <QPainter>
 #include <QSlider>
@@ -11,14 +13,13 @@ public:
     explicit VolumeSlider(QWidget *parent = nullptr) : QSlider(Qt::Horizontal, parent) {}
 
     static QColor colorForFraction(double fraction) {
-        fraction = qBound(0.0, fraction, 1.0);
-        const QColor low("#514968"), high("#c9b9e8");
-        return QColor(qRound(low.red() + (high.red() - low.red()) * fraction),
-                      qRound(low.green() + (high.green() - low.green()) * fraction),
-                      qRound(low.blue() + (high.blue() - low.blue()) * fraction));
+        return volumeColor(fraction);
     }
 
 protected:
+    void wheelEvent(QWheelEvent *event) override {
+        volumeWheel(this, event, wheelRemainder);
+    }
     void paintEvent(QPaintEvent *) override {
         QStyleOptionSlider option;
         initStyleOption(&option);
@@ -49,4 +50,7 @@ protected:
         painter.setBrush(isEnabled() ? accent.lighter(125) : QColor("#66637b"));
         painter.drawEllipse(QPointF(center, height() / 2.0), 9, 9);
     }
+
+private:
+    int wheelRemainder = 0;
 };

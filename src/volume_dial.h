@@ -1,5 +1,7 @@
 #pragma once
 
+#include "volume_control_style.h"
+
 #include <QDial>
 #include <QMouseEvent>
 #include <QPainter>
@@ -32,9 +34,13 @@ protected:
             QDial::mouseMoveEvent(event);
             return;
         }
-        setValue(qBound(minimum(), startValue + qRound((startY - event->position().y())
-                                                       * (maximum() - minimum()) / 150.0), maximum()));
+        const qreal target = startValue + startY - event->position().y();
+        setValue(qRound(qBound(qreal(minimum()), target, qreal(maximum()))));
         event->accept();
+    }
+
+    void wheelEvent(QWheelEvent *event) override {
+        volumeWheel(this, event, wheelRemainder);
     }
 
     void mouseReleaseEvent(QMouseEvent *event) override {
@@ -52,13 +58,17 @@ protected:
         painter.setRenderHint(QPainter::Antialiasing);
         const QRectF ring = QRectF(rect()).adjusted(13, 13, -13, -13);
         const QColor track = isEnabled() ? QColor("#30304f") : QColor("#25243a");
-        const QColor accent = isEnabled() ? QColor("#a78bfa") : QColor("#55516f");
-        painter.setPen(QPen(track, 8, Qt::SolidLine, Qt::RoundCap));
-        painter.drawArc(ring, 225 * 16, -270 * 16);
         const double fraction = maximum() == minimum() ? 0.0
             : double(value() - minimum()) / (maximum() - minimum());
-        painter.setPen(QPen(accent, 8, Qt::SolidLine, Qt::RoundCap));
-        painter.drawArc(ring, 225 * 16, -qRound(270 * 16 * fraction));
+        const QColor accent = isEnabled() ? volumeColor(fraction) : QColor("#55516f");
+        painter.setPen(QPen(track, 8, Qt::SolidLine, Qt::RoundCap));
+        painter.drawArc(ring, 225 * 16, -270 * 16);
+        const int span = qRound(270 * 16 * fraction);
+        for (int angle = 0; angle < span; angle += 16) {
+            painter.setPen(QPen(isEnabled() ? volumeColor(double(angle) / (270 * 16)) : accent,
+                                8, Qt::SolidLine, Qt::RoundCap));
+            painter.drawArc(ring, 225 * 16 - angle, -qMin(16, span - angle));
+        }
         painter.setPen(QPen(hasFocus() ? accent : QColor("#444061"), 1.5));
         painter.setBrush(isEnabled() ? QColor("#211f39") : QColor("#1a192a"));
         painter.drawEllipse(ring.adjusted(14, 14, -14, -14));
@@ -74,4 +84,5 @@ private:
     bool dragging = false;
     qreal startY = 0;
     int startValue = 0;
+    int wheelRemainder = 0;
 };
